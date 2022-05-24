@@ -83,7 +83,7 @@ def wxt_bot_message():
             return Response("WORKING", mimetype='text/plain')
         elif request.method == 'POST':
             function_logger.info("GOT POST MESSAGE")
-            function_logger.debug(request.json)
+            function_logger.info(request.json)
             if request.json["state"] == "ok":
                 prepend = "✅😀🐵"
                 postpend = "🐵😀✅"
@@ -93,7 +93,12 @@ def wxt_bot_message():
             else:
                 prepend = "‼️😨🙈"
                 postpend = "🙈😨‼️"
-            message_response = "%s %s to see more infomation please [click here](%s) %s" % (prepend, request.json["title"], request.json["ruleUrl"], postpend)
+            value_strings = ""
+            for alert in request.json["alerts"]:
+                if alert["valueString"]:
+                    value_strings += "\n - %s" % (alert["valueString"])
+
+            message_response = "%s %s %s %s" % (prepend, request.json["title"], value_strings, postpend)
             api.messages.create(WXT_BOT_ROOM_ID, text=request.json["title"], markdown=message_response)
             return Response("WORKING", mimetype='text/plain', status=200)
     except KeyError as e:
